@@ -40,4 +40,4 @@ jobs:
       - name: Deploy to GitHub Packages
         run: mvn --batch-mode deploy -Pgithub
         env:
-          GITHUB_TOKEN: ${{ secrets.PAYSTACK_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.JSONBIN_GITHUB_TOKEN }}

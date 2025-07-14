@@ -25,4 +25,4 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: OdunlamiZO/java-paystack
+          slug: OdunlamiZO/java-jsonbin
