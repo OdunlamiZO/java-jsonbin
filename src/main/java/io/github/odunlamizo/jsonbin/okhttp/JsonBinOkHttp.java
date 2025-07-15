@@ -1,12 +1,15 @@
 package io.github.odunlamizo.jsonbin.okhttp;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import io.github.odunlamizo.jsonbin.JsonBin;
 import io.github.odunlamizo.jsonbin.JsonBinException;
 import io.github.odunlamizo.jsonbin.model.Bin;
 import io.github.odunlamizo.jsonbin.model.Error;
 import io.github.odunlamizo.jsonbin.util.JsonUtil;
 import java.io.IOException;
+import java.util.function.Function;
 import lombok.NonNull;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -15,22 +18,71 @@ import okhttp3.Request;
 public class JsonBinOkHttp<T> implements JsonBin<T> {
 
     private final OkHttpClient client;
-
     private final String baseUrl;
+    private final Function<String, Bin<T>> deserializer;
 
-    private final TypeReference<Bin<T>> typeReference;
-
-    public JsonBinOkHttp(@NonNull String masterKey) {
-        this(masterKey, "https://api.jsonbin.io/v3");
-    }
-
-    public JsonBinOkHttp(@NonNull String masterKey, @NonNull String baseUrl) {
+    private JsonBinOkHttp(
+            String masterKey,
+            String accessKey,
+            String baseUrl,
+            Function<String, Bin<T>> deserializer) {
         this.baseUrl = baseUrl;
-        this.typeReference = new TypeReference<Bin<T>>() {};
+        this.deserializer = deserializer;
         this.client =
                 new OkHttpClient.Builder()
-                        .addInterceptor(new AuthInterceptor(masterKey, null))
+                        .addInterceptor(new AuthInterceptor(masterKey, accessKey))
                         .build();
+    }
+
+    public static class Builder {
+        private String masterKey;
+
+        private String accessKey;
+
+        private String baseUrl = "https://api.jsonbin.io/v3";
+
+        public Builder withMasterKey(String masterKey) {
+            this.masterKey = masterKey;
+            return this;
+        }
+
+        public Builder withAccessKey(String accessKey) {
+            this.accessKey = accessKey;
+            return this;
+        }
+
+        public Builder withBaseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+            return this;
+        }
+
+        public <T> JsonBinOkHttp<T> build(Class<T> recordClass) {
+            if ((masterKey == null || masterKey.isBlank())
+                    && (accessKey == null || accessKey.isBlank())) {
+                throw new IllegalArgumentException(
+                        "Either masterKey or accessKey must be provided.");
+            }
+
+            return new JsonBinOkHttp<>(
+                    masterKey,
+                    accessKey,
+                    baseUrl,
+                    json -> {
+                        TypeReference<Bin<T>> ref =
+                                new TypeReference<>() {
+                                    @Override
+                                    public java.lang.reflect.Type getType() {
+                                        return TypeFactory.defaultInstance()
+                                                .constructParametricType(Bin.class, recordClass);
+                                    }
+                                };
+                        try {
+                            return JsonUtil.toValue(json, ref);
+                        } catch (JsonProcessingException e) {
+                            throw new JsonBinException("");
+                        }
+                    });
+        }
     }
 
     @Override
@@ -51,7 +103,7 @@ public class JsonBinOkHttp<T> implements JsonBin<T> {
                 throw new JsonBinException(errorResponse.getMessage());
             }
 
-            return JsonUtil.toValue(json, typeReference);
+            return deserializer.apply(json);
         } catch (IOException exception) {
             throw new JsonBinException(exception.getMessage(), exception.getCause());
         }

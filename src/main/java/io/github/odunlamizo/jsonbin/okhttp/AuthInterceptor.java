@@ -20,15 +20,13 @@ class AuthInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Request original = chain.request();
 
-        boolean hasAccessKey = accessKey != null && !accessKey.isBlank();
+        Request.Builder requestBuilder = original.newBuilder();
+        if (accessKey != null && !accessKey.isEmpty()) {
+            requestBuilder.header("x-access-key", accessKey);
+        } else {
+            requestBuilder.header("x-master-key", masterKey);
+        }
 
-        Request requestWithAuth =
-                original.newBuilder()
-                        .header(
-                                hasAccessKey ? "x-access-key" : "x-master-key",
-                                hasAccessKey ? accessKey : masterKey)
-                        .build();
-
-        return chain.proceed(requestWithAuth);
+        return chain.proceed(requestBuilder.build());
     }
 }
