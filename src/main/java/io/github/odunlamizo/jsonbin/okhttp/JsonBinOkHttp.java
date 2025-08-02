@@ -78,8 +78,9 @@ public class JsonBinOkHttp<T> implements JsonBin<T> {
                                 };
                         try {
                             return JsonUtil.toValue(json, ref);
-                        } catch (JsonProcessingException e) {
-                            throw new JsonBinException("");
+                        } catch (JsonProcessingException exception) {
+                            throw new JsonBinException(
+                                    exception.getMessage(), exception.getCause());
                         }
                     });
         }
