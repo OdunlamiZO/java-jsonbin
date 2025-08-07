@@ -1,5 +1,7 @@
 package io.github.odunlamizo.jsonbin.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.ZonedDateTime;
 import lombok.Getter;
@@ -15,6 +17,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Metadata {
 
     /** The unique identifier of the bin. */
@@ -38,4 +42,11 @@ public class Metadata {
 
     /** The human-readable name assigned to the bin. */
     private String name;
+
+    /**
+     * The unique identifier of the collection this bin belongs to.
+     *
+     * <p>This ID is used to associate the bin with a specific collection in JSONBin.io.
+     */
+    private String collectionId;
 }

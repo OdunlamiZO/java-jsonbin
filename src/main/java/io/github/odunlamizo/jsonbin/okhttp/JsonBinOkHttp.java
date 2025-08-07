@@ -97,6 +97,7 @@ public class JsonBinOkHttp<T> implements JsonBin<T> {
     private Bin<T> newCall(Request request) {
         try (okhttp3.Response response = client.newCall(request).execute()) {
 
+            assert response.body() != null;
             String json = response.body().string();
 
             if (!response.isSuccessful()) {
