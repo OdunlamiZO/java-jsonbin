@@ -9,6 +9,7 @@ import io.github.odunlamizo.jsonbin.model.Bin;
 import io.github.odunlamizo.jsonbin.model.Error;
 import io.github.odunlamizo.jsonbin.util.JsonUtil;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.function.Function;
 import lombok.NonNull;
 import okhttp3.OkHttpClient;
@@ -97,13 +98,13 @@ public class JsonBinOkHttp<T> implements JsonBin<T> {
     private Bin<T> newCall(Request request) {
         try (okhttp3.Response response = client.newCall(request).execute()) {
 
-            if (response.body() == null) {
+            if (Objects.isNull(response.body())) {
                 throw new JsonBinException("Response body is null");
             }
             String json = response.body().string();
 
             if (!response.isSuccessful()) {
-                Error errorResponse = JsonUtil.toValue(json, new TypeReference<Error>() {});
+                Error errorResponse = JsonUtil.toValue(json, new TypeReference<>() {});
                 throw new JsonBinException(errorResponse.getMessage());
             }
 
