@@ -20,7 +20,7 @@ public class App {
             System.exit(1);
         }
 
-        JsonBin<UserList> jsonBin =
+        var jsonBin =
                 new JsonBinOkHttp.Builder().withMasterKey(masterKey).build(UserList.class);
         Bin<UserList> bin = jsonBin.readBin("687644d36063391d31ae163f");
         System.out.println(bin);
