@@ -11,11 +11,11 @@ public final class JsonUtil {
     private static final ObjectMapper MAPPER;
 
     static {
-        MAPPER =
-                new ObjectMapper()
-                        .registerModule(new JavaTimeModule())
-                        .findAndRegisterModules()
-                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        MAPPER = new ObjectMapper();
+        MAPPER.findAndRegisterModules();
+        MAPPER.registerModule(new JavaTimeModule()); // ensure JSR-310 support explicitly
+        // Ensure dates are handled as ISO-8601 strings (not timestamps)
+        MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     private JsonUtil() {}
