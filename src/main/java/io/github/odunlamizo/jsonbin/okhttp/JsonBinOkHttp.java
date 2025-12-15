@@ -1,6 +1,5 @@
 package io.github.odunlamizo.jsonbin.okhttp;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import io.github.odunlamizo.jsonbin.JsonBin;
@@ -9,26 +8,18 @@ import io.github.odunlamizo.jsonbin.model.Bin;
 import io.github.odunlamizo.jsonbin.model.Error;
 import io.github.odunlamizo.jsonbin.util.JsonUtil;
 import java.io.IOException;
-import java.util.Objects;
-import java.util.function.Function;
 import lombok.NonNull;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
-/** JSONBin.io Java SDK implementation powered by OkHttp */
-public class JsonBinOkHttp<T> implements JsonBin<T> {
+/** JSONBIN.io Java SDK implementation powered by OkHttp */
+public class JsonBinOkHttp implements JsonBin {
 
     private final OkHttpClient client;
     private final String baseUrl;
-    private final Function<String, Bin<T>> deserializer;
 
-    private JsonBinOkHttp(
-            String masterKey,
-            String accessKey,
-            String baseUrl,
-            Function<String, Bin<T>> deserializer) {
+    private JsonBinOkHttp(String masterKey, String accessKey, String baseUrl) {
         this.baseUrl = baseUrl;
-        this.deserializer = deserializer;
         this.client =
                 new OkHttpClient.Builder()
                         .addInterceptor(new AuthInterceptor(masterKey, accessKey))
@@ -57,60 +48,52 @@ public class JsonBinOkHttp<T> implements JsonBin<T> {
             return this;
         }
 
-        public <T> JsonBinOkHttp<T> build(Class<T> recordClass) {
+        public JsonBinOkHttp build() {
             if ((masterKey == null || masterKey.isBlank())
                     && (accessKey == null || accessKey.isBlank())) {
                 throw new IllegalArgumentException(
                         "Either masterKey or accessKey must be provided.");
             }
 
-            return new JsonBinOkHttp<>(
-                    masterKey,
-                    accessKey,
-                    baseUrl,
-                    json -> {
-                        TypeReference<Bin<T>> ref =
-                                new TypeReference<>() {
-                                    @Override
-                                    public java.lang.reflect.Type getType() {
-                                        return TypeFactory.defaultInstance()
-                                                .constructParametricType(Bin.class, recordClass);
-                                    }
-                                };
-                        try {
-                            return JsonUtil.toValue(json, ref);
-                        } catch (JsonProcessingException exception) {
-                            throw new JsonBinException(
-                                    exception.getMessage(), exception.getCause());
-                        }
-                    });
+            return new JsonBinOkHttp(masterKey, accessKey, baseUrl);
         }
     }
 
     @Override
-    public Bin<T> readBin(@NonNull String binId) throws JsonBinException {
+    public <T> Bin<T> readBin(@NonNull String binId, Class<T> recordClass) throws JsonBinException {
         final String URL = String.format("%s/b/%s", baseUrl, binId);
         Request request = new Request.Builder().url(URL).build();
 
-        return newCall(request);
+        return newCall(request, recordClass);
     }
 
-    private Bin<T> newCall(Request request) {
+    private <T> Bin<T> newCall(Request request, Class<T> recordClass) {
         try (okhttp3.Response response = client.newCall(request).execute()) {
 
-            if (Objects.isNull(response.body())) {
+            if (response.body() == null) {
                 throw new JsonBinException("Response body is null");
             }
+
             String json = response.body().string();
 
             if (!response.isSuccessful()) {
-                Error errorResponse = JsonUtil.toValue(json, new TypeReference<Error>() {});
-                throw new JsonBinException(errorResponse.getMessage());
+                Error error = JsonUtil.toValue(json, new TypeReference<Error>() {});
+                throw new JsonBinException(error.getMessage());
             }
 
-            return deserializer.apply(json);
-        } catch (IOException exception) {
-            throw new JsonBinException(exception.getMessage(), exception.getCause());
+            TypeReference<Bin<T>> ref =
+                    new TypeReference<>() {
+                        @Override
+                        public java.lang.reflect.Type getType() {
+                            return TypeFactory.defaultInstance()
+                                    .constructParametricType(Bin.class, recordClass);
+                        }
+                    };
+
+            return JsonUtil.toValue(json, ref);
+
+        } catch (IOException e) {
+            throw new JsonBinException(e.getMessage(), e);
         }
     }
 }

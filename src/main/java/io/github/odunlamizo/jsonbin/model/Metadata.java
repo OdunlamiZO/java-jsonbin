@@ -9,7 +9,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Represents metadata information returned from a JSONBin.io response.
+ * Represents metadata information returned from a JSONBIN.io response.
  *
  * <p>This includes details such as the bin's unique identifier, visibility, creation timestamp, and
  * assigned name.
@@ -46,7 +46,7 @@ public class Metadata {
     /**
      * The unique identifier of the collection this bin belongs to.
      *
-     * <p>This ID is used to associate the bin with a specific collection in JSONBin.io.
+     * <p>This ID is used to associate the bin with a specific collection in JSONBIN.io.
      */
     private String collectionId;
 }

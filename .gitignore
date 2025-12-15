@@ -1,11 +1,8 @@
-# Java
+# Java build files
 *.class
 *.jar
 *.war
 *.ear
-*.nar
-hs_err_pid*
-replay_pid*
 
 # Maven
 target/
@@ -16,78 +13,29 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
-.mvn/timing.properties
-.mvn/wrapper/maven-wrapper.jar
 
-# Gradle
-bin/
+# Gradle (if applicable)
+.gradle/
 build/
-.gradle
-.gradletasknamecache
-gradle-app.setting
-!gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
 
-# Eclipse
-.settings/
-.classpath
-.project
-.metadata
-bin/
-tmp/
-*.tmp
-*.bak
-*.swp
-*~.nib
-local.properties
-.loadpath
-.factorypath
-.recommenders/
-.apt_generated/
-.apt_generated_test/
-
-# VSCode
-.vscode/
-.code-workspace
-.history/
-.ionide/
-
-# IntelliJ (included just in case)
+# IntelliJ IDEA
 .idea/
 *.iml
 *.iws
-*.ipr
-*.iws
 out/
-.idea_modules/
 
-# NetBeans (included just in case)
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# Eclipse
+.classpath
+.project
+.settings/
 
-# OS specific
+# VS Code
+.vscode/
+
+# OS files
 .DS_Store
 Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Logs
-*.log
-log/
-logs/
 
 # Environment files
 .env
-.env.local
-.env.*
-!.env.example
-
-# Application specific
-/src/main/resources/application-*.properties
-/src/main/resources/application-*.yml
-/src/main/resources/application-*.yaml
-!/src/main/resources/application.properties
-!/src/main/resources/application.yml
-!/src/main/resources/application.yaml

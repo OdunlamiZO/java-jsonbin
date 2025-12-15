@@ -5,7 +5,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Represents a response wrapper from JSONBin.io containing both the data record and its metadata.
+ * Represents a response wrapper from JSONBIN.io containing both the data record and its metadata.
  *
  * <p>This generic class is used to hold the actual data stored in the bin (as {@code record}) and
  * additional information about the bin such as creation time, visibility, and name (as {@link
