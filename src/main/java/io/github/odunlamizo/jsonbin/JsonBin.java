@@ -13,7 +13,8 @@ public interface JsonBin {
      * strongly-typed {@link Bin} object containing the expected data type {@code T}.
      *
      * @param binId the unique identifier of the bin to retrieve; must not be {@code null}
-     * @param recordClass the class of the expected record type {@code T} used for deserialization; must not be {@code null}
+     * @param recordClass the class of the expected record type {@code T} used for deserialization;
+     *     must not be {@code null}
      * @return a {@link Bin} object containing the deserialized data
      * @throws JsonBinException if the request fails, the bin is not found, or deserialization fails
      */
