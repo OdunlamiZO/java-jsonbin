@@ -11,7 +11,7 @@ public class App {
         // Load environment variables from .env file
         Dotenv dotenv = Dotenv.configure().load();
 
-        // Get master key from .env
+        // Get the master key from .env
         String masterKey = dotenv.get("JSONBIN_MASTER_KEY");
 
         // Check if the master key exists
@@ -20,8 +20,8 @@ public class App {
             System.exit(1);
         }
 
-        var jsonBin = new JsonBinOkHttp.Builder().withMasterKey(masterKey).build(UserList.class);
-        Bin<UserList> bin = jsonBin.readBin("687644d36063391d31ae163f");
+        JsonBin jsonBin = new JsonBinOkHttp.Builder().withMasterKey(masterKey).build();
+        Bin<UserList> bin = jsonBin.readBin("687644d36063391d31ae163f", UserList.class);
         System.out.println(bin);
     }
 }

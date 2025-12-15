@@ -2,6 +2,7 @@ package io.github.odunlamizo.jsonbin.okhttp;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.github.odunlamizo.jsonbin.JsonBin;
 import io.github.odunlamizo.jsonbin.JsonBinException;
 import io.github.odunlamizo.jsonbin.model.Bin;
 import io.github.odunlamizo.jsonbin.model.User;
@@ -55,13 +56,10 @@ class JsonBinOkHttpTest {
 
         String mockUrl = mockWebServer.url("").toString().replaceAll("/$", "");
 
-        JsonBinOkHttp<UserList> jsonBin =
-                new JsonBinOkHttp.Builder()
-                        .withMasterKey("dummy-key")
-                        .withBaseUrl(mockUrl)
-                        .build(UserList.class);
+        JsonBin jsonBin =
+                new JsonBinOkHttp.Builder().withMasterKey("dummy-key").withBaseUrl(mockUrl).build();
 
-        Bin<UserList> result = jsonBin.readBin("test-bin-id");
+        Bin<UserList> result = jsonBin.readBin("test-bin-id", UserList.class);
 
         assertNotNull(result);
         assertEquals("abc123", result.getMetadata().getId());
@@ -89,14 +87,13 @@ class JsonBinOkHttpTest {
 
         String mockUrl = mockWebServer.url("").toString().replaceAll("/$", "");
 
-        JsonBinOkHttp<UserList> jsonBin =
-                new JsonBinOkHttp.Builder()
-                        .withMasterKey("dummy-key")
-                        .withBaseUrl(mockUrl)
-                        .build(UserList.class);
+        JsonBin jsonBin =
+                new JsonBinOkHttp.Builder().withMasterKey("dummy-key").withBaseUrl(mockUrl).build();
 
         JsonBinException exception =
-                assertThrows(JsonBinException.class, () -> jsonBin.readBin("invalid-id"));
+                assertThrows(
+                        JsonBinException.class,
+                        () -> jsonBin.readBin("invalid-id", UserList.class));
 
         assertTrue(exception.getMessage().contains("Bin not found"));
     }
