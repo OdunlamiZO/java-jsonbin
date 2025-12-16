@@ -262,4 +262,37 @@ class JsonBinOkHttpTest {
         assertEquals("true", recordedRequest.getHeader(JsonBin.HEADER_BIN_PRIVATE));
         assertEquals("collection-id", recordedRequest.getHeader(JsonBin.HEADER_COLLECTION_ID));
     }
+
+    @Test
+    void shouldUpdateCollectionName() throws InterruptedException {
+        String json =
+                """
+                {
+                  "record": "collection-id",
+                  "metadata": {
+                    "createdAt": "2024-01-01T10:00:00Z"
+                  }
+                }
+                """;
+
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setBody(json)
+                        .addHeader("Content-Type", "application/json"));
+
+        String mockUrl = mockWebServer.url("").toString().replaceAll("/$", "");
+
+        JsonBin jsonBin =
+                new JsonBinOkHttp.Builder().withMasterKey("dummy-key").withBaseUrl(mockUrl).build();
+
+        Bin<String> result = jsonBin.updateCollection("collection-id", "New Name");
+
+        assertEquals("collection-id", result.getRecord());
+
+        var recordedRequest = mockWebServer.takeRequest();
+        assertEquals("POST", recordedRequest.getMethod());
+        assertEquals("/c/collection-id/meta/name", recordedRequest.getPath());
+        assertEquals("New Name", recordedRequest.getHeader(JsonBin.HEADER_COLLECTION_NAME));
+    }
 }

@@ -83,4 +83,19 @@ public interface JsonBin {
      *     representing the collection identifier
      */
     Bin<String> createCollection(@NonNull String collectionName);
+
+    /**
+     * Updates the display name of an existing collection.
+     *
+     * <p>This operation targets the collection's metadata and changes only its human-readable name.
+     * It does not modify the bins contained within the collection.
+     *
+     * @param collectionId the unique identifier of the collection to update; must not be {@code
+     *     null}
+     * @param collectionName the new display name to assign to the collection; must not be {@code
+     *     null}
+     * @return a {@link Bin} wrapping the server response; the record type is a {@link String}
+     *     representing the (unchanged) collection identifier
+     */
+    Bin<String> updateCollection(@NonNull String collectionId, @NonNull String collectionName);
 }

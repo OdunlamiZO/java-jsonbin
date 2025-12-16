@@ -149,6 +149,21 @@ public class JsonBinOkHttp implements JsonBin {
         return newCall(request, new TypeReference<>() {});
     }
 
+    @Override
+    public Bin<String> updateCollection(
+            @NonNull String collectionId, @NonNull String collectionName) {
+        String url = String.format("%s/c/%s/meta/name", baseUrl, collectionId);
+
+        Request request =
+                new Request.Builder()
+                        .url(url)
+                        .post(okhttp3.internal.Util.EMPTY_REQUEST)
+                        .header(HEADER_COLLECTION_NAME, collectionName)
+                        .build();
+
+        return newCall(request, new TypeReference<>() {});
+    }
+
     private <T> T newCall(Request request, TypeReference<T> ref) {
         try (okhttp3.Response response = client.newCall(request).execute()) {
 
