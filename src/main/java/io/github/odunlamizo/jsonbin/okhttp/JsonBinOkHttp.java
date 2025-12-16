@@ -16,9 +16,11 @@ import okhttp3.Request;
 
 /** JSONBIN.io Java SDK implementation powered by OkHttp */
 public class JsonBinOkHttp implements JsonBin {
+    private final String baseUrl;
 
     private final OkHttpClient client;
-    private final String baseUrl;
+
+    private static final okhttp3.MediaType JSON = okhttp3.MediaType.parse("application/json");
 
     private JsonBinOkHttp(String masterKey, String accessKey, String baseUrl) {
         this.baseUrl = baseUrl;
@@ -80,21 +82,20 @@ public class JsonBinOkHttp implements JsonBin {
             throw new JsonBinException("Failed to serialize record", exception);
         }
 
-        okhttp3.RequestBody body =
-                okhttp3.RequestBody.create(bodyJson, okhttp3.MediaType.parse("application/json"));
+        okhttp3.RequestBody body = okhttp3.RequestBody.create(bodyJson, JSON);
 
         Request.Builder requestBuilder = new Request.Builder().url(url).post(body);
 
         if (binName != null && !binName.isBlank()) {
-            requestBuilder.header("X-Bin-Name", binName);
+            requestBuilder.header(HEADER_BIN_NAME, binName);
         }
 
         if (isPrivate != null) {
-            requestBuilder.header("X-Bin-Private", isPrivate.toString());
+            requestBuilder.header(HEADER_BIN_PRIVATE, isPrivate.toString());
         }
 
         if (collectionId != null && !collectionId.isBlank()) {
-            requestBuilder.header("X-Collection-Id", collectionId);
+            requestBuilder.header(HEADER_COLLECTION_ID, collectionId);
         }
 
         Request request = requestBuilder.build();
@@ -116,8 +117,7 @@ public class JsonBinOkHttp implements JsonBin {
             throw new JsonBinException("Failed to serialize record", exception);
         }
 
-        okhttp3.RequestBody body =
-                okhttp3.RequestBody.create(bodyJson, okhttp3.MediaType.parse("application/json"));
+        okhttp3.RequestBody body = okhttp3.RequestBody.create(bodyJson, JSON);
 
         Request request = new Request.Builder().url(url).put(body).build();
 
@@ -143,7 +143,7 @@ public class JsonBinOkHttp implements JsonBin {
                 new Request.Builder()
                         .url(url)
                         .post(okhttp3.internal.Util.EMPTY_REQUEST)
-                        .header("X-Collection-Name", collectionName)
+                        .header(HEADER_COLLECTION_NAME, collectionName)
                         .build();
 
         return newCall(request, new TypeReference<>() {});

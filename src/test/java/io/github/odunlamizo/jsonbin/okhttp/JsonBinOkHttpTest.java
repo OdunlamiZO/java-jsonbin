@@ -258,8 +258,8 @@ class JsonBinOkHttpTest {
         var recordedRequest = mockWebServer.takeRequest();
 
         assertEquals("POST", recordedRequest.getMethod());
-        assertEquals("Test Bin", recordedRequest.getHeader("X-Bin-Name"));
-        assertEquals("true", recordedRequest.getHeader("X-Bin-Private"));
-        assertEquals("collection-id", recordedRequest.getHeader("X-Collection-Id"));
+        assertEquals("Test Bin", recordedRequest.getHeader(JsonBin.HEADER_BIN_NAME));
+        assertEquals("true", recordedRequest.getHeader(JsonBin.HEADER_BIN_PRIVATE));
+        assertEquals("collection-id", recordedRequest.getHeader(JsonBin.HEADER_COLLECTION_ID));
     }
 }

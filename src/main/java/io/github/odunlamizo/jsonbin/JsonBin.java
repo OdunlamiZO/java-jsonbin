@@ -8,6 +8,18 @@ import lombok.NonNull;
 /** JSONBin.io Java SDK */
 public interface JsonBin {
 
+    /** HTTP header used to set a human‑readable name for a created bin. */
+    String HEADER_BIN_NAME = "X-Bin-Name";
+
+    /** HTTP header used to control the privacy of a bin (true = private, false = public). */
+    String HEADER_BIN_PRIVATE = "X-Bin-Private";
+
+    /** HTTP header specifying the identifier of an existing collection to attach the bin to. */
+    String HEADER_COLLECTION_ID = "X-Collection-Id";
+
+    /** HTTP header used when creating a collection to provide its display name. */
+    String HEADER_COLLECTION_NAME = "X-Collection-Name";
+
     /**
      * Reads the contents of a bin from JSONBin.io using its unique identifier.
      *
