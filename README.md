@@ -54,8 +54,8 @@ A minimal and type-safe Java SDK for interacting with JsonBin.io. This SDK allow
 ### Setup
 
 ```java
-JsonBin<UserList> jsonBin =
-        new JsonBinOkHttp.Builder().withMasterKey("JSONBIN_MASTER_KEY").build(UserList.class);
+JsonBin jsonBin =
+        new JsonBinOkHttp.Builder().withMasterKey("JSONBIN_MASTER_KEY").build();
 ```
 
 ### Example: Calling the API
@@ -63,7 +63,7 @@ JsonBin<UserList> jsonBin =
 Here's a basic example of using the SDK to read a bin from JSONBin.io:
 
 ```java
-Bin<UserList> bin = jsonBin.readBin("687644d36063391d31ae163f");
+Bin<UserList> bin = jsonBin.readBin("687644d36063391d31ae163f", UserList.class);
 System.out.println(bin);
 // Bin(record={users=[{name=Morounfoluwa Mary, age=19}]}, metadata=Metadata(id=687644d36063391d31ae163f, _private=false, createdAt=2025-07-15T12:08:51.887Z, name=Java SDK Test))
 ```
