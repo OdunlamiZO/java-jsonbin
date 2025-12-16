@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.ZonedDateTime;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /**
  * Represents metadata information returned from a JSONBIN.io response.
@@ -14,9 +12,7 @@ import lombok.ToString;
  * <p>This includes details such as the bin's unique identifier, visibility, creation timestamp, and
  * assigned name.
  */
-@Getter
-@Setter
-@ToString
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Metadata {

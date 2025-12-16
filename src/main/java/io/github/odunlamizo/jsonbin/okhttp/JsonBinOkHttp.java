@@ -5,18 +5,22 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import io.github.odunlamizo.jsonbin.JsonBin;
 import io.github.odunlamizo.jsonbin.JsonBinException;
 import io.github.odunlamizo.jsonbin.model.Bin;
+import io.github.odunlamizo.jsonbin.model.BinHandle;
 import io.github.odunlamizo.jsonbin.model.Error;
 import io.github.odunlamizo.jsonbin.util.JsonUtil;
 import java.io.IOException;
+import java.util.List;
 import lombok.NonNull;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
 /** JSONBIN.io Java SDK implementation powered by OkHttp */
 public class JsonBinOkHttp implements JsonBin {
+    private final String baseUrl;
 
     private final OkHttpClient client;
-    private final String baseUrl;
+
+    private static final okhttp3.MediaType JSON = okhttp3.MediaType.parse("application/json");
 
     private JsonBinOkHttp(String masterKey, String accessKey, String baseUrl) {
         this.baseUrl = baseUrl;
@@ -60,14 +64,92 @@ public class JsonBinOkHttp implements JsonBin {
     }
 
     @Override
-    public <T> Bin<T> readBin(@NonNull String binId, Class<T> recordClass) throws JsonBinException {
-        final String URL = String.format("%s/b/%s", baseUrl, binId);
-        Request request = new Request.Builder().url(URL).build();
+    public <T> Bin<T> readBin(@NonNull String binId, @NonNull Class<T> recordClass) {
+        String url = String.format("%s/b/%s", baseUrl, binId);
+        Request request = new Request.Builder().url(url).build();
 
-        return newCall(request, recordClass);
+        return newCall(request, binTypeRef(recordClass));
     }
 
-    private <T> Bin<T> newCall(Request request, Class<T> recordClass) {
+    @Override
+    public <T> Bin<T> createBin(T record, String binName, Boolean isPrivate, String collectionId) {
+        String url = String.format("%s/b", baseUrl);
+
+        String bodyJson;
+        try {
+            bodyJson = JsonUtil.toJson(record);
+        } catch (Exception exception) {
+            throw new JsonBinException("Failed to serialize record", exception);
+        }
+
+        okhttp3.RequestBody body = okhttp3.RequestBody.create(bodyJson, JSON);
+
+        Request.Builder requestBuilder = new Request.Builder().url(url).post(body);
+
+        if (binName != null && !binName.isBlank()) {
+            requestBuilder.header(HEADER_BIN_NAME, binName);
+        }
+
+        if (isPrivate != null) {
+            requestBuilder.header(HEADER_BIN_PRIVATE, isPrivate.toString());
+        }
+
+        if (collectionId != null && !collectionId.isBlank()) {
+            requestBuilder.header(HEADER_COLLECTION_ID, collectionId);
+        }
+
+        Request request = requestBuilder.build();
+
+        @SuppressWarnings("unchecked")
+        Class<T> recordClass = (Class<T>) record.getClass();
+
+        return newCall(request, binTypeRef(recordClass));
+    }
+
+    @Override
+    public <T> Bin<T> updateBin(@NonNull T record, @NonNull String binId) {
+        String url = String.format("%s/b/%s", baseUrl, binId);
+
+        String bodyJson;
+        try {
+            bodyJson = JsonUtil.toJson(record);
+        } catch (Exception exception) {
+            throw new JsonBinException("Failed to serialize record", exception);
+        }
+
+        okhttp3.RequestBody body = okhttp3.RequestBody.create(bodyJson, JSON);
+
+        Request request = new Request.Builder().url(url).put(body).build();
+
+        @SuppressWarnings("unchecked")
+        Class<T> recordClass = (Class<T>) record.getClass();
+
+        return newCall(request, binTypeRef(recordClass));
+    }
+
+    @Override
+    public List<BinHandle> readCollection(@NonNull String collectionId) {
+        String url = String.format("%s/c/%s/bins", baseUrl, collectionId);
+        Request request = new Request.Builder().url(url).build();
+
+        return newCall(request, new TypeReference<>() {});
+    }
+
+    @Override
+    public Bin<String> createCollection(@NonNull String collectionName) {
+        String url = String.format("%s/c", baseUrl);
+
+        Request request =
+                new Request.Builder()
+                        .url(url)
+                        .post(okhttp3.internal.Util.EMPTY_REQUEST)
+                        .header(HEADER_COLLECTION_NAME, collectionName)
+                        .build();
+
+        return newCall(request, new TypeReference<>() {});
+    }
+
+    private <T> T newCall(Request request, TypeReference<T> ref) {
         try (okhttp3.Response response = client.newCall(request).execute()) {
 
             if (response.body() == null) {
@@ -77,23 +159,24 @@ public class JsonBinOkHttp implements JsonBin {
             String json = response.body().string();
 
             if (!response.isSuccessful()) {
-                Error error = JsonUtil.toValue(json, new TypeReference<Error>() {});
+                Error error = JsonUtil.toValue(json, new TypeReference<>() {});
                 throw new JsonBinException(error.getMessage());
             }
 
-            TypeReference<Bin<T>> ref =
-                    new TypeReference<>() {
-                        @Override
-                        public java.lang.reflect.Type getType() {
-                            return TypeFactory.defaultInstance()
-                                    .constructParametricType(Bin.class, recordClass);
-                        }
-                    };
-
             return JsonUtil.toValue(json, ref);
 
-        } catch (IOException e) {
-            throw new JsonBinException(e.getMessage(), e);
+        } catch (IOException exception) {
+            throw new JsonBinException(exception.getMessage(), exception);
         }
+    }
+
+    private <T> TypeReference<Bin<T>> binTypeRef(Class<T> recordClass) {
+        return new TypeReference<>() {
+            @Override
+            public java.lang.reflect.Type getType() {
+                return TypeFactory.defaultInstance()
+                        .constructParametricType(Bin.class, recordClass);
+            }
+        };
     }
 }

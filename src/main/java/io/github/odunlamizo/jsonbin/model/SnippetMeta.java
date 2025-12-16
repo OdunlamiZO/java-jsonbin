@@ -3,9 +3,7 @@ package io.github.odunlamizo.jsonbin.model;
 import lombok.Data;
 
 @Data
-public class User {
+public class SnippetMeta {
 
     private String name;
-
-    private int age;
 }

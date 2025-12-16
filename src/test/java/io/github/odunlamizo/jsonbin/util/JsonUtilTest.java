@@ -66,4 +66,73 @@ class JsonUtilTest {
                 JsonProcessingException.class,
                 () -> JsonUtil.toValue(invalidJson, new TypeReference<Bin<UserList>>() {}));
     }
+
+    @Test
+    void shouldSerializeSimpleObjectToJson() throws JsonProcessingException {
+        User user = new User();
+        user.setName("Morounfoluwa Mary");
+        user.setAge(19);
+
+        String json = JsonUtil.toJson(user);
+
+        assertNotNull(json);
+        assertTrue(json.contains("\"name\":\"Morounfoluwa Mary\""));
+        assertTrue(json.contains("\"age\":19"));
+    }
+
+    @Test
+    void shouldSerializeBinWithNestedRecord() throws JsonProcessingException {
+        User user1 = new User();
+        user1.setName("Mary");
+        user1.setAge(19);
+
+        User user2 = new User();
+        user2.setName("John");
+        user2.setAge(22);
+
+        UserList userList = new UserList();
+        userList.setUsers(List.of(user1, user2));
+
+        Bin<UserList> bin = new Bin<>();
+        bin.setRecord(userList);
+
+        String json = JsonUtil.toJson(bin);
+
+        assertNotNull(json);
+        assertTrue(json.contains("\"users\""));
+        assertTrue(json.contains("\"name\":\"Mary\""));
+        assertTrue(json.contains("\"name\":\"John\""));
+    }
+
+    @Test
+    void shouldSerializeZonedDateTimeAsIsoString() throws JsonProcessingException {
+        ZonedDateTime createdAt = ZonedDateTime.parse("2024-01-31T06:27:31.021Z");
+
+        Metadata metadata = new Metadata();
+        metadata.setId("bin-id");
+        metadata.setCreatedAt(createdAt);
+        metadata.set_private(true);
+
+        Bin<String> bin = new Bin<>();
+        bin.setMetadata(metadata);
+        bin.setRecord("test");
+
+        String json = JsonUtil.toJson(bin);
+
+        assertNotNull(json);
+        assertTrue(json.contains("\"createdAt\":\"2024-01-31T06:27:31.021Z\""));
+    }
+
+    @Test
+    void shouldThrowWhenObjectIsNotSerializable() {
+        Object nonSerializable =
+                new Object() {
+                    @SuppressWarnings("unused")
+                    public Object getSelf() {
+                        return this; // circular reference
+                    }
+                };
+
+        assertThrows(JsonProcessingException.class, () -> JsonUtil.toJson(nonSerializable));
+    }
 }

@@ -1,8 +1,6 @@
 package io.github.odunlamizo.jsonbin.model;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /**
  * Represents a response wrapper from JSONBIN.io containing both the data record and its metadata.
@@ -13,9 +11,7 @@ import lombok.ToString;
  *
  * @param <T> the type of the data record stored in the bin
  */
-@Getter
-@Setter
-@ToString
+@Data
 public class Bin<T> {
 
     /** The actual content or data retrieved from the bin. */

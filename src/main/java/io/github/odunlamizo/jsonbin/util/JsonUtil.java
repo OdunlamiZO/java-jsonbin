@@ -24,4 +24,8 @@ public final class JsonUtil {
             throws JsonProcessingException {
         return MAPPER.readValue(jsonData, valueTypeRef);
     }
+
+    public static <T> String toJson(T object) throws JsonProcessingException {
+        return MAPPER.writeValueAsString(object);
+    }
 }
