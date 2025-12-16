@@ -1,11 +1,9 @@
 package io.github.odunlamizo.jsonbin.model;
 
 import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class UserList {
 
     private List<User> users;

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.github.odunlamizo.jsonbin.JsonBin;
 import io.github.odunlamizo.jsonbin.JsonBinException;
 import io.github.odunlamizo.jsonbin.model.Bin;
+import io.github.odunlamizo.jsonbin.model.BinHandle;
 import io.github.odunlamizo.jsonbin.model.User;
 import io.github.odunlamizo.jsonbin.model.UserList;
 import java.util.List;
@@ -96,5 +97,169 @@ class JsonBinOkHttpTest {
                         () -> jsonBin.readBin("invalid-id", UserList.class));
 
         assertTrue(exception.getMessage().contains("Bin not found"));
+    }
+
+    @Test
+    void shouldCreateBinSuccessfully() {
+        String responseJson =
+                """
+                {
+                  "record": {
+                    "name": "Morounfoluwa Mary",
+                    "age": 19
+                  },
+                  "metadata": {
+                    "id": "new-bin-id",
+                    "private": false,
+                    "createdAt": "2024-01-01T10:00:00Z",
+                    "name": "Users Bin"
+                  }
+                }
+                """;
+
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setBody(responseJson)
+                        .addHeader("Content-Type", "application/json"));
+
+        String mockUrl = mockWebServer.url("").toString().replaceAll("/$", "");
+
+        JsonBin jsonBin =
+                new JsonBinOkHttp.Builder().withMasterKey("dummy-key").withBaseUrl(mockUrl).build();
+
+        User user = new User();
+        user.setName("Morounfoluwa Mary");
+        user.setAge(19);
+
+        Bin<User> result = jsonBin.createBin(user, "Users Bin", false, null);
+
+        assertNotNull(result);
+        assertEquals("new-bin-id", result.getMetadata().getId());
+        assertEquals("Users Bin", result.getMetadata().getName());
+        assertEquals("Morounfoluwa Mary", result.getRecord().getName());
+    }
+
+    @Test
+    void shouldUpdateBinSuccessfully() {
+        String responseJson =
+                """
+                {
+                  "record": {
+                    "name": "Updated Name",
+                    "age": 20
+                  },
+                  "metadata": {
+                    "id": "bin-id",
+                    "private": true,
+                    "createdAt": "2024-01-01T10:00:00Z"
+                  }
+                }
+                """;
+
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setBody(responseJson)
+                        .addHeader("Content-Type", "application/json"));
+
+        String mockUrl = mockWebServer.url("").toString().replaceAll("/$", "");
+
+        JsonBin jsonBin =
+                new JsonBinOkHttp.Builder().withMasterKey("dummy-key").withBaseUrl(mockUrl).build();
+
+        User user = new User();
+        user.setName("Updated Name");
+        user.setAge(20);
+
+        Bin<User> result = jsonBin.updateBin(user, "bin-id");
+
+        assertEquals("bin-id", result.getMetadata().getId());
+        assertEquals("Updated Name", result.getRecord().getName());
+    }
+
+    @Test
+    void shouldReadCollectionBins() {
+        String json =
+                """
+                [
+                  {
+                    "private": true,
+                    "snippetMeta": { "name": "dev" },
+                    "record": "bin-1",
+                    "createdAt": "2024-01-01T10:00:00Z"
+                  },
+                  {
+                    "private": false,
+                    "snippetMeta": { "name": "staging" },
+                    "record": "bin-2",
+                    "createdAt": "2024-01-02T10:00:00Z"
+                  }
+                ]
+                """;
+
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setBody(json)
+                        .addHeader("Content-Type", "application/json"));
+
+        String mockUrl = mockWebServer.url("").toString().replaceAll("/$", "");
+
+        JsonBin jsonBin =
+                new JsonBinOkHttp.Builder().withMasterKey("dummy-key").withBaseUrl(mockUrl).build();
+
+        List<BinHandle> bins = jsonBin.readCollection("collection-id");
+
+        assertEquals(2, bins.size());
+        assertEquals("bin-1", bins.get(0).getId());
+        assertEquals("dev", bins.get(0).getSnippetMeta().getName());
+    }
+
+    @Test
+    void shouldCreateCollection() {
+        String json =
+                """
+                {
+                  "record": "collection-id",
+                  "metadata": {
+                    "createdAt": "2024-01-01T10:00:00Z"
+                  }
+                }
+                """;
+
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setBody(json)
+                        .addHeader("Content-Type", "application/json"));
+
+        String mockUrl = mockWebServer.url("").toString().replaceAll("/$", "");
+
+        JsonBin jsonBin =
+                new JsonBinOkHttp.Builder().withMasterKey("dummy-key").withBaseUrl(mockUrl).build();
+
+        Bin<String> result = jsonBin.createCollection("My Collection");
+
+        assertEquals("collection-id", result.getRecord());
+    }
+
+    @Test
+    void shouldSendBinHeadersOnCreate() throws InterruptedException {
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("{}"));
+
+        String mockUrl = mockWebServer.url("").toString().replaceAll("/$", "");
+
+        JsonBin jsonBin =
+                new JsonBinOkHttp.Builder().withMasterKey("dummy-key").withBaseUrl(mockUrl).build();
+
+        jsonBin.createBin(new User(), "Test Bin", true, "collection-id");
+
+        var recordedRequest = mockWebServer.takeRequest();
+
+        assertEquals("POST", recordedRequest.getMethod());
+        assertEquals("Test Bin", recordedRequest.getHeader("X-Bin-Name"));
+        assertEquals("true", recordedRequest.getHeader("X-Bin-Private"));
+        assertEquals("collection-id", recordedRequest.getHeader("X-Collection-Id"));
     }
 }
