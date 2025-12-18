@@ -157,7 +157,7 @@ public class JsonBinOkHttp implements JsonBin {
         Request request =
                 new Request.Builder()
                         .url(url)
-                        .post(okhttp3.internal.Util.EMPTY_REQUEST)
+                        .put(okhttp3.internal.Util.EMPTY_REQUEST)
                         .header(HEADER_COLLECTION_NAME, collectionName)
                         .build();
 

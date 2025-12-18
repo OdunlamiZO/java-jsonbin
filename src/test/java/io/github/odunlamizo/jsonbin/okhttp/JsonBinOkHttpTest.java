@@ -291,7 +291,7 @@ class JsonBinOkHttpTest {
         assertEquals("collection-id", result.getRecord());
 
         var recordedRequest = mockWebServer.takeRequest();
-        assertEquals("POST", recordedRequest.getMethod());
+        assertEquals("PUT", recordedRequest.getMethod());
         assertEquals("/c/collection-id/meta/name", recordedRequest.getPath());
         assertEquals("New Name", recordedRequest.getHeader(JsonBin.HEADER_COLLECTION_NAME));
     }
