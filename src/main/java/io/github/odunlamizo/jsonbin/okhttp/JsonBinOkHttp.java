@@ -183,8 +183,7 @@ public class JsonBinOkHttp implements JsonBin {
         return new TypeReference<>() {
             @Override
             public java.lang.reflect.Type getType() {
-                return TypeFactory.defaultInstance()
-                        .constructParametricType(Bin.class, cls);
+                return TypeFactory.defaultInstance().constructParametricType(Bin.class, cls);
             }
         };
     }

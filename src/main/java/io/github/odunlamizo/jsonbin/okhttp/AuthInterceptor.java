@@ -1,7 +1,6 @@
 package io.github.odunlamizo.jsonbin.okhttp;
 
 import java.io.IOException;
-
 import lombok.NonNull;
 import okhttp3.Interceptor;
 import okhttp3.Request;

@@ -27,8 +27,8 @@ public interface JsonBin {
      * strongly-typed {@link Bin} object containing the expected data type {@code T}.
      *
      * @param binId the unique identifier of the bin to retrieve; must not be {@code null}
-     * @param cls the class of the expected record type {@code T} used for deserialization;
-     *     must not be {@code null}
+     * @param cls the class of the expected record type {@code T} used for deserialization; must not
+     *     be {@code null}
      * @return a {@link Bin} object containing the deserialized data
      */
     <T> Bin<T> readBin(@NonNull String binId, @NonNull Class<T> cls);
