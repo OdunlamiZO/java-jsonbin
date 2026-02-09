@@ -1,6 +1,8 @@
 package io.github.odunlamizo.jsonbin.okhttp;
 
 import java.io.IOException;
+
+import lombok.NonNull;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -16,6 +18,7 @@ class AuthInterceptor implements Interceptor {
         this.accessKey = accessKey;
     }
 
+    @NonNull
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request original = chain.request();

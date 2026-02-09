@@ -64,11 +64,11 @@ public class JsonBinOkHttp implements JsonBin {
     }
 
     @Override
-    public <T> Bin<T> readBin(@NonNull String binId, @NonNull Class<T> recordClass) {
+    public <T> Bin<T> readBin(@NonNull String binId, @NonNull Class<T> cls) {
         String url = String.format("%s/b/%s", baseUrl, binId);
         Request request = new Request.Builder().url(url).build();
 
-        return newCall(request, binTypeRef(recordClass));
+        return newCall(request, getTypeRef(cls));
     }
 
     @Override
@@ -100,10 +100,7 @@ public class JsonBinOkHttp implements JsonBin {
 
         Request request = requestBuilder.build();
 
-        @SuppressWarnings("unchecked")
-        Class<T> recordClass = (Class<T>) record.getClass();
-
-        return newCall(request, binTypeRef(recordClass));
+        return newCall(request, getTypeRef(getClass(record)));
     }
 
     @Override
@@ -121,10 +118,7 @@ public class JsonBinOkHttp implements JsonBin {
 
         Request request = new Request.Builder().url(url).put(body).build();
 
-        @SuppressWarnings("unchecked")
-        Class<T> recordClass = (Class<T>) record.getClass();
-
-        return newCall(request, binTypeRef(recordClass));
+        return newCall(request, getTypeRef(getClass(record)));
     }
 
     @Override
@@ -185,13 +179,18 @@ public class JsonBinOkHttp implements JsonBin {
         }
     }
 
-    private <T> TypeReference<Bin<T>> binTypeRef(Class<T> recordClass) {
+    private <T> TypeReference<Bin<T>> getTypeRef(Class<T> cls) {
         return new TypeReference<>() {
             @Override
             public java.lang.reflect.Type getType() {
                 return TypeFactory.defaultInstance()
-                        .constructParametricType(Bin.class, recordClass);
+                        .constructParametricType(Bin.class, cls);
             }
         };
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> Class<T> getClass(T object) {
+        return (Class<T>) object.getClass();
     }
 }
